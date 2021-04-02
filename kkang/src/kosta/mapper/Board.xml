@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="kosta.mapper.BoardMapper"> <!-- 동일한 이름의 인터페이스를 만들어야한다 -->
+	<cache />
+	
+	<!-- 컨트롤 스페이스 해도 resultType 안나옴 -->
+	<insert id="insertBoard" parameterType="Board"><!-- id와 동일한 메서드를 만들어야한다 -->
+		insert into board(
+			SEQ, TITLE, WRITER, CONTENTS, REGDATE, HITCOUNT, FNAME
+		)
+		values(
+			BOARD_SEQ.NEXTVAL, #{title}, #{writer}, #{contents}, SYSDATE, 0, #{fname}
+		)
+		
+	</insert>
+	
+	<!-- select에는 파라미터타입과 result타입 둘다 올 수 있다. 내일 검색하고 이러면 파라미터로 데이터를 던져야할 것이다. -->
+	<!-- 인서트 업데이트 딜리트는 result타입이 없다. 잘 삭제되었는지, 수정되었는지에 대한 정수값만 리턴된다. -->
+	<!-- 보드객체 여러개면 알아서 리스트로 준다. -->
+	
+	 <select id="listBoard" parameterType="Search" resultType="Board" >
+		select * from board
+		
+		<if test="area != null">
+			<where>
+				<!-- select * from board where (title LIKE %aa% OR writer LIKE %aa%) order by seq desc -->
+				<foreach collection="area" item="item" separator="OR" open="(" close=")">
+					${item} LIKE #{searchKey}
+					<!-- sql 컬럼명은 변수가 되면 안됀다 $표시를 하면 변수로 값을 가져온거라 보지 않고 상수처럼(리터럴형식으로) 처리하기 위해서 -->
+				</foreach>
+			</where>
+		</if> 
+		
+		 order by seq desc
+	</select> 
+	
+	<select id="detailBoard" resultType="Board" parameterType="int">
+	
+		select * from board where seq = #{seq}
+	</select> 
+	
+	<update id="updateBoard" parameterType="Board">		
+		update board SET title = #{title}, contents = #{contents} Where seq = #{seq}
+	</update>
+	
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM board WHERE seq = #{seq}
+	</delete>
+	
+	<select id="countBoard" resultType="int" parameterType="Search">	
+		SELECT count(*) FROM board
+		<if test="area != null">
+			<where>
+				<!-- select * from board where (title LIKE %aa% OR writer LIKE %aa%) order by seq desc -->
+				<foreach collection="area" item="item" separator="OR" open="(" close=")">
+					${item} LIKE #{searchKey}
+					<!-- sql 컬럼명은 변수가 되면 안됀다 $표시를 하면 변수로 값을 가져온거라 보지 않고 상수처럼(리터럴형식으로) 처리하기 위해서 -->
+				</foreach>
+			</where>
+		</if> 
+	</select>
+	
+	<insert id="insertReply" parameterType="Reply">
+		INSERT INTO reply(
+			r_no, r_title, r_writer, r_contents, r_regdate, seq
+		) VALUES(
+			REPLY_SEQ.NEXTVAL, #{r_title}, #{r_writer}, #{r_contents}, SYSDATE, #{seq}
+		)
+	</insert>
+	
+ 	<select id="listReply" resultType="Reply" parameterType="int">
+		SELECT * FROM reply WHERE seq=#{seq}
+
+	</select>
+	
+	
+	<!-- 두번째 방법 -->
+<!-- 	<resultMap type="Blog" id="blogMap">
+		<result property="id" column="b_id" />
+		<result property="name" column="b_name"/>
+		<result property="title" column="b_title"/>
+	</resultMap>
+	<select id="test2" resultMap="blogMap">
+		두번째 방법
+	</select>
+	
+	<select id="test" resultType="Blog">근데 블로그 멤버변수 이름은 id, name, title이다.
+		컬럼명은 b_id, b_name, b_title 이런식으로 되어있다고 합시다.
+		
+		select 
+			b_id as id,
+			b_name as name,
+			b_title as title
+		from blog
+		이렇게 AS로 컬럼명과 변수명을 맞춰줄 수도있다.
+
+	</select> -->
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
